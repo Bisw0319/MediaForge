@@ -237,11 +237,30 @@ class ImageService:
 
         resized = img.resize((target_w, target_h), Image.Resampling.LANCZOS)
 
-        ext = Path(input_path).suffix or ".jpg"
+        ext = Path(input_path).suffix.lower() or ".jpg"
         out_filename = generate_unique_filename(original_filename, prefix="resized", new_ext=ext)
         out_path = PROCESSED_DIR / out_filename
 
-        resized.save(out_path, quality=95, optimize=True)
+        save_kwargs = {}
+        if ext in [".jpg", ".jpeg"]:
+            if resized.mode in ("RGBA", "LA", "P"):
+                bg = Image.new("RGB", resized.size, (255, 255, 255))
+                if resized.mode == "P":
+                    resized = resized.convert("RGBA")
+                if "A" in resized.mode:
+                    bg.paste(resized, mask=resized.split()[-1])
+                else:
+                    bg.paste(resized)
+                resized = bg
+            elif resized.mode != "RGB":
+                resized = resized.convert("RGB")
+            save_kwargs = {"quality": 95, "optimize": True}
+        elif ext == ".png":
+            save_kwargs = {"optimize": True}
+        elif ext == ".webp":
+            save_kwargs = {"quality": 95}
+
+        resized.save(out_path, **save_kwargs)
 
         new_size = os.path.getsize(out_path)
 

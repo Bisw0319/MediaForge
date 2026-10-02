@@ -199,9 +199,24 @@ async def download_file(filename: str, background_tasks: BackgroundTasks, cleanu
     if cleanup:
         background_tasks.add_task(delete_specific_file, str(file_path))
 
-    media_type, _ = mimetypes.guess_type(clean_name)
-    if not media_type:
-        media_type = "application/octet-stream"
+    ext = file_path.suffix.lower()
+    media_types = {
+        ".jpg": "image/jpeg",
+        ".jpeg": "image/jpeg",
+        ".png": "image/png",
+        ".webp": "image/webp",
+        ".gif": "image/gif",
+        ".mp4": "video/mp4",
+        ".webm": "video/webm",
+        ".mp3": "audio/mpeg",
+        ".wav": "audio/wav",
+        ".pdf": "application/pdf",
+        ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        ".zip": "application/zip",
+    }
+    guessed_type, _ = mimetypes.guess_type(clean_name)
+    media_type = media_types.get(ext, guessed_type or "application/octet-stream")
 
     return FileResponse(
         path=str(file_path),
@@ -209,6 +224,7 @@ async def download_file(filename: str, background_tasks: BackgroundTasks, cleanu
         media_type=media_type,
         headers={
             "X-Content-Type-Options": "nosniff",
+            "Access-Control-Allow-Origin": "*",
             "Access-Control-Expose-Headers": "Content-Disposition, Content-Length",
         }
     )

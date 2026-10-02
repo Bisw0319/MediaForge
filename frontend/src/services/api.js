@@ -41,6 +41,10 @@ export async function downloadFile(url, filename = 'downloaded_file') {
     if (!res.ok) {
       throw new Error(`Server returned error ${res.status}`);
     }
+    const contentType = res.headers.get('content-type') || '';
+    if (contentType.includes('text/html') && !filename.toLowerCase().endsWith('.html')) {
+      throw new Error('Backend returned an HTML response instead of the processed binary file. Please verify backend connection.');
+    }
     const blob = await res.blob();
     const blobUrl = window.URL.createObjectURL(blob);
     const a = document.createElement('a');

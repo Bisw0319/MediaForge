@@ -298,6 +298,42 @@ export default function BackgroundRemoverPage({ onBack, initialFile }) {
         </div>
       )}
 
+      {/* Fallback / Retry State when file is selected but no result */}
+      {selectedFile && !isProcessing && !result && (
+        <div className="p-8 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-center space-y-5 shadow-sm animate-fadeIn">
+          {originalUrl && (
+            <div className="max-w-xs mx-auto rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 max-h-60 bg-slate-900 flex items-center justify-center p-2">
+              <img src={originalUrl} alt="Selected photo" className="max-h-56 object-contain rounded-xl" />
+            </div>
+          )}
+          <div className="space-y-2">
+            <h3 className="text-base font-bold text-slate-800 dark:text-slate-200">
+              {error ? 'Background Removal Encountered an Issue' : 'Photo Loaded'}
+            </h3>
+            <p className="text-xs text-slate-500 max-w-md mx-auto">
+              {error || 'Click Remove Background to begin AI edge segmentation.'}
+            </p>
+          </div>
+          <div className="flex items-center justify-center space-x-3 pt-2">
+            <button
+              type="button"
+              onClick={() => runRemoval(selectedFile, bgType, customColor, gradientTheme, modelType)}
+              className="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-600/30 flex items-center space-x-2"
+            >
+              <Scissors className="w-4 h-4" />
+              <span>Retry Background Removal</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleReset}
+              className="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-semibold text-xs hover:bg-slate-100"
+            >
+              Choose Another Photo
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Results and Background Customization */}
       {selectedFile && !isProcessing && result && (
         <div className="space-y-6 animate-fadeIn">

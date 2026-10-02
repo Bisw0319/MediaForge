@@ -111,6 +111,7 @@ class PDFAdvancedService:
             if page_idx > 0:
                 word_doc.add_page_break()
 
+            page_blocks = 0
             # Extract blocks of text (x0, y0, x1, y1, text, block_no, block_type)
             blocks = page.get_text("blocks")
             for b in blocks:
@@ -119,6 +120,7 @@ class PDFAdvancedService:
                     text = b[4].strip()
                     if not text:
                         continue
+                    page_blocks += 1
                     total_blocks += 1
                     lines = [ln.strip() for ln in text.split("\n") if ln.strip()]
                     full_para = " ".join(lines)
@@ -132,6 +134,12 @@ class PDFAdvancedService:
                         p = word_doc.add_paragraph(full_para)
                         p.paragraph_format.space_after = Pt(6)
                         p.paragraph_format.line_spacing = 1.15
+
+            # If page had no text (e.g. scanned image, diagram, photo PDF), embed the rendered page image!
+            if page_blocks == 0:
+                pix = page.get_pixmap(dpi=150)
+                img_io = io.BytesIO(pix.tobytes(output="png"))
+                word_doc.add_picture(img_io, width=Inches(6.2))
 
         doc.close()
         word_doc.save(str(out_path))

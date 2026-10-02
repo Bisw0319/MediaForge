@@ -102,14 +102,24 @@ class PDFService:
 
                     # Compress to JPEG
                     out_img_buf = io.BytesIO()
-                    if pil_img.mode in ("RGBA", "P"):
+                    if pil_img.mode in ("RGBA", "P", "LA"):
+                        bg = Image.new("RGB", pil_img.size, (255, 255, 255))
+                        if pil_img.mode == "P":
+                            pil_img = pil_img.convert("RGBA")
+                        if "A" in pil_img.mode:
+                            bg.paste(pil_img, mask=pil_img.split()[-1])
+                        else:
+                            bg.paste(pil_img)
+                        pil_img = bg
+                    elif pil_img.mode != "RGB":
                         pil_img = pil_img.convert("RGB")
+
                     pil_img.save(out_img_buf, format="JPEG", quality=img_quality, optimize=True)
                     new_img_bytes = out_img_buf.getvalue()
 
                     # Only replace if newly compressed bytes are smaller
                     if len(new_img_bytes) < len(image_bytes):
-                        doc.update_stream(xref, new_img_bytes)
+                        page.replace_image(xref, stream=new_img_bytes)
                 except Exception:
                     # Keep original image if stream cannot be replaced
                     continue
