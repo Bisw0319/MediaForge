@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Film, RefreshCw, ArrowLeft, Download, Check, Sparkles, Loader2 } from 'lucide-react';
 import DropZone from '../components/DropZone';
 import VideoPreviewPlayer from '../components/VideoPreviewPlayer';
@@ -6,7 +6,7 @@ import ProcessingProgress from '../components/ProcessingProgress';
 import { api } from '../services/api';
 import { formatBytes } from '../utils/formatters';
 
-export default function VideoConverterPage({ onBack }) {
+export default function VideoConverterPage({ onBack, initialFile }) {
   const [selectedFile, setSelectedFile] = useState(null);
   const [targetFormat, setTargetFormat] = useState('MP4');
 
@@ -28,10 +28,17 @@ export default function VideoConverterPage({ onBack }) {
 
   const handleFileSelected = (file) => {
     const f = Array.isArray(file) ? file[0] : file;
+    if (!f) return;
     setSelectedFile(f);
     setResult(null);
     setError(null);
   };
+
+  useEffect(() => {
+    if (initialFile) {
+      handleFileSelected(initialFile);
+    }
+  }, [initialFile]);
 
   const handleConvert = async () => {
     if (!selectedFile) return;

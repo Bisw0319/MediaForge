@@ -107,7 +107,10 @@ export default function Navbar({ activePage, setActivePage, onTriggerUpload, onO
               </button>
 
               {compressDropdownOpen && (
-                <div className="absolute left-0 mt-2 w-56 rounded-xl bg-white dark:bg-slate-900 shadow-xl border border-slate-200 dark:border-slate-800 py-2 z-50 animate-slide-up">
+                <div 
+                  onMouseDown={(e) => e.preventDefault()}
+                  className="absolute left-0 mt-2 w-56 rounded-xl bg-white dark:bg-slate-900 shadow-xl border border-slate-200 dark:border-slate-800 py-2 z-50 animate-slide-up"
+                >
                   <button
                     onClick={() => navTo('image-compressor')}
                     className="w-full px-4 py-2.5 text-left text-sm flex items-center space-x-3 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200"
@@ -202,7 +205,10 @@ export default function Navbar({ activePage, setActivePage, onTriggerUpload, onO
               </button>
 
               {convertDropdownOpen && (
-                <div className="absolute left-0 mt-2 w-48 rounded-xl bg-white dark:bg-slate-900 shadow-xl border border-slate-200 dark:border-slate-800 py-2 z-50 animate-slide-up">
+                <div 
+                  onMouseDown={(e) => e.preventDefault()}
+                  className="absolute left-0 mt-2 w-48 rounded-xl bg-white dark:bg-slate-900 shadow-xl border border-slate-200 dark:border-slate-800 py-2 z-50 animate-slide-up"
+                >
                   <button
                     onClick={() => navTo('image-converter')}
                     className="w-full px-4 py-2 text-left text-sm flex items-center space-x-2.5 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200"
@@ -238,7 +244,10 @@ export default function Navbar({ activePage, setActivePage, onTriggerUpload, onO
               </button>
 
               {pdfDropdownOpen && (
-                <div className="absolute left-0 mt-2 w-56 rounded-xl bg-white dark:bg-slate-900 shadow-xl border border-slate-200 dark:border-slate-800 py-2 z-50 animate-slide-up">
+                <div 
+                  onMouseDown={(e) => e.preventDefault()}
+                  className="absolute left-0 mt-2 w-56 rounded-xl bg-white dark:bg-slate-900 shadow-xl border border-slate-200 dark:border-slate-800 py-2 z-50 animate-slide-up"
+                >
                   <button
                     onClick={() => navTo('pdf-tools', 'img-to-pdf')}
                     className="w-full px-4 py-2 text-left text-xs font-semibold flex items-center space-x-2.5 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200"

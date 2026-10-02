@@ -24,15 +24,35 @@ export default function BeforeAfterSlider({
   const handleMouseDown = () => setIsDragging(true);
   const handleMouseUp = () => setIsDragging(false);
 
-  const handleMouseMove = (e) => {
+  useEffect(() => {
     if (!isDragging) return;
-    handleMove(e.clientX);
-  };
 
-  const handleTouchMove = (e) => {
-    if (!e.touches || e.touches.length === 0) return;
-    handleMove(e.touches[0].clientX);
-  };
+    const onGlobalMouseMove = (e) => {
+      handleMove(e.clientX);
+    };
+
+    const onGlobalTouchMove = (e) => {
+      if (e.touches && e.touches[0]) {
+        handleMove(e.touches[0].clientX);
+      }
+    };
+
+    const onGlobalEnd = () => {
+      setIsDragging(false);
+    };
+
+    window.addEventListener('mousemove', onGlobalMouseMove);
+    window.addEventListener('mouseup', onGlobalEnd);
+    window.addEventListener('touchmove', onGlobalTouchMove);
+    window.addEventListener('touchend', onGlobalEnd);
+
+    return () => {
+      window.removeEventListener('mousemove', onGlobalMouseMove);
+      window.removeEventListener('mouseup', onGlobalEnd);
+      window.removeEventListener('touchmove', onGlobalTouchMove);
+      window.removeEventListener('touchend', onGlobalEnd);
+    };
+  }, [isDragging, handleMove]);
 
   return (
     <div className="space-y-2 select-none">
@@ -43,14 +63,14 @@ export default function BeforeAfterSlider({
 
       <div
         ref={containerRef}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
+        onMouseDown={(e) => {
+          setIsDragging(true);
+          handleMove(e.clientX);
+        }}
         onTouchStart={(e) => {
           setIsDragging(true);
           if (e.touches && e.touches[0]) handleMove(e.touches[0].clientX);
         }}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={() => setIsDragging(false)}
         className={`relative w-full h-64 sm:h-80 md:h-96 rounded-2xl overflow-hidden cursor-ew-resize select-none touch-none border border-slate-200 dark:border-slate-800 ${
           isTransparent ? 'bg-checkerboard' : 'bg-slate-900'
         }`}

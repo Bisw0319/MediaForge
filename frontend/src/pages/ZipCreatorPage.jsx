@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   FileArchive, 
   UploadCloud, 
@@ -22,7 +22,7 @@ import ResultCard from '../components/ResultCard';
 import { api } from '../services/api';
 import { formatBytes } from '../utils/formatters';
 
-export default function ZipCreatorPage({ onBack }) {
+export default function ZipCreatorPage({ onBack, initialFile }) {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [archiveName, setArchiveName] = useState('mediaforge_archive.zip');
   
@@ -39,6 +39,12 @@ export default function ZipCreatorPage({ onBack }) {
     const newFiles = Array.isArray(filesOrFile) ? filesOrFile : [filesOrFile];
     setSelectedFiles((prev) => [...prev, ...newFiles]);
   };
+
+  useEffect(() => {
+    if (initialFile) {
+      handleFilesSelected(initialFile);
+    }
+  }, [initialFile]);
 
   const removeFile = (idx) => {
     setSelectedFiles((prev) => prev.filter((_, i) => i !== idx));

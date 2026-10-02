@@ -225,6 +225,11 @@ export default function Footer({ setActivePage }) {
             </h5>
             <ul className="space-y-2 text-xs">
               <li>
+                <button onClick={() => navTo('pdf-tools')} className="text-slate-600 dark:text-slate-400 hover:text-brand-600 dark:hover:text-brand-400">
+                  PDF Tools Suite
+                </button>
+              </li>
+              <li>
                 <button onClick={() => navTo('background-remover')} className="text-slate-600 dark:text-slate-400 hover:text-brand-600 dark:hover:text-brand-400">
                   Background Remover
                 </button>

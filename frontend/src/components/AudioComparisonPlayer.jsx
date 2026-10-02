@@ -84,6 +84,8 @@ export default function AudioComparisonPlayer({
         <audio
           ref={audioRef}
           src={currentSrc}
+          onPlay={() => setIsPlaying(true)}
+          onPause={() => setIsPlaying(false)}
           onEnded={() => setIsPlaying(false)}
           controls
           className="w-full h-11 rounded-lg"

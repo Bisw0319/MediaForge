@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Scissors,
   Sparkles,
@@ -18,7 +18,7 @@ import BeforeAfterSlider from '../components/BeforeAfterSlider';
 import { api } from '../services/api';
 import { formatBytes } from '../utils/formatters';
 
-export default function BackgroundRemoverPage({ onBack }) {
+export default function BackgroundRemoverPage({ onBack, initialFile }) {
   const [selectedFile, setSelectedFile] = useState(null);
   const [originalUrl, setOriginalUrl] = useState(null);
   
@@ -39,13 +39,29 @@ export default function BackgroundRemoverPage({ onBack }) {
 
   const handleFileSelected = (file) => {
     const f = Array.isArray(file) ? file[0] : file;
+    if (!f) return;
     setSelectedFile(f);
-    setOriginalUrl(URL.createObjectURL(f));
     setResult(null);
     setError(null);
+    setOriginalUrl((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return URL.createObjectURL(f);
+    });
     // Automatically trigger initial removal with selected model
     runRemoval(f, 'transparent', null, null, modelType);
   };
+
+  useEffect(() => {
+    if (initialFile) {
+      handleFileSelected(initialFile);
+    }
+    return () => {
+      setOriginalUrl((prev) => {
+        if (prev) URL.revokeObjectURL(prev);
+        return null;
+      });
+    };
+  }, [initialFile]);
 
   const runRemoval = async (fileToProcess, chosenBgType, color, grad, chosenModel) => {
     const f = fileToProcess || selectedFile;

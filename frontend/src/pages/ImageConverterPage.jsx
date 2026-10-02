@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { RefreshCw, ArrowRight, ArrowLeft, Download, RotateCcw, Check, Sparkles } from 'lucide-react';
 import DropZone from '../components/DropZone';
 import { api } from '../services/api';
 import { formatBytes } from '../utils/formatters';
 
-export default function ImageConverterPage({ onBack }) {
+export default function ImageConverterPage({ onBack, initialFile }) {
   const [selectedFile, setSelectedFile] = useState(null);
   const [originalUrl, setOriginalUrl] = useState(null);
   const [targetFormat, setTargetFormat] = useState('WEBP');
@@ -23,11 +23,27 @@ export default function ImageConverterPage({ onBack }) {
 
   const handleFileSelected = (file) => {
     const f = Array.isArray(file) ? file[0] : file;
+    if (!f) return;
     setSelectedFile(f);
-    setOriginalUrl(URL.createObjectURL(f));
     setResult(null);
     setError(null);
+    setOriginalUrl((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return URL.createObjectURL(f);
+    });
   };
+
+  useEffect(() => {
+    if (initialFile) {
+      handleFileSelected(initialFile);
+    }
+    return () => {
+      setOriginalUrl((prev) => {
+        if (prev) URL.revokeObjectURL(prev);
+        return null;
+      });
+    };
+  }, [initialFile]);
 
   const handleConvert = async () => {
     if (!selectedFile) return;

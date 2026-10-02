@@ -28,6 +28,12 @@ export function detectFileType(file) {
   if (type.startsWith('audio/') || /\.(mp3|wav|aac|m4a|flac|ogg)$/i.test(name)) {
     return 'audio';
   }
+  if (/\.(docx|doc|xlsx|xls|pptx|ppt)$/i.test(name) || type.includes('word') || type.includes('officedocument')) {
+    return 'document';
+  }
+  if (/\.(zip|tar|gz|7z|rar)$/i.test(name) || type.includes('zip')) {
+    return 'archive';
+  }
   return 'unknown';
 }
 

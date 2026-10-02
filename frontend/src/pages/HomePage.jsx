@@ -44,6 +44,11 @@ export default function HomePage({ setActivePage, onFileSelectedForPage, onSelec
       onFileSelectedForPage('pdf-compressor', file);
     } else if (fileType === 'audio') {
       onFileSelectedForPage('audio-compressor', file);
+    } else if (fileType === 'document') {
+      if (onSelectPdfTab) onSelectPdfTab('word-to-pdf');
+      onFileSelectedForPage('pdf-tools', file);
+    } else if (fileType === 'archive') {
+      onFileSelectedForPage('zip-creator', fileOrFiles);
     } else {
       // Default to image compressor (handles images and batches)
       onFileSelectedForPage('image-compressor', fileOrFiles);

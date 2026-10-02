@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Maximize2, Lock, Unlock, ArrowLeft, Download, RotateCcw, Check, Sparkles } from 'lucide-react';
 import DropZone from '../components/DropZone';
 import { api } from '../services/api';
 import { formatBytes } from '../utils/formatters';
 
-export default function ImageResizerPage({ onBack }) {
+export default function ImageResizerPage({ onBack, initialFile }) {
   const [selectedFile, setSelectedFile] = useState(null);
   const [originalUrl, setOriginalUrl] = useState(null);
   const [origDimensions, setOrigDimensions] = useState({ width: 1920, height: 1080 });
@@ -32,20 +32,37 @@ export default function ImageResizerPage({ onBack }) {
 
   const handleFileSelected = (file) => {
     const f = Array.isArray(file) ? file[0] : file;
+    if (!f) return;
     setSelectedFile(f);
-    setOriginalUrl(URL.createObjectURL(f));
     setResult(null);
     setError(null);
 
-    // Read natural image dimensions
-    const img = new Image();
-    img.src = URL.createObjectURL(f);
-    img.onload = () => {
-      setOrigDimensions({ width: img.naturalWidth, height: img.naturalHeight });
-      setWidth(img.naturalWidth);
-      setHeight(img.naturalHeight);
-    };
+    // Reuse a single object URL and revoke previous to prevent memory leaks
+    setOriginalUrl((prevUrl) => {
+      if (prevUrl) URL.revokeObjectURL(prevUrl);
+      const newUrl = URL.createObjectURL(f);
+      const img = new Image();
+      img.onload = () => {
+        setOrigDimensions({ width: img.naturalWidth, height: img.naturalHeight });
+        setWidth(img.naturalWidth);
+        setHeight(img.naturalHeight);
+      };
+      img.src = newUrl;
+      return newUrl;
+    });
   };
+
+  useEffect(() => {
+    if (initialFile) {
+      handleFileSelected(initialFile);
+    }
+    return () => {
+      setOriginalUrl((prev) => {
+        if (prev) URL.revokeObjectURL(prev);
+        return null;
+      });
+    };
+  }, [initialFile]);
 
   const handleWidthChange = (val) => {
     const w = parseInt(val) || 0;

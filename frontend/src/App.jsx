@@ -192,30 +192,35 @@ export default function App() {
 
         {activePage === 'background-remover' && (
           <BackgroundRemoverPage
+            initialFile={preloadedFile}
             onBack={handleNavBack}
           />
         )}
 
         {activePage === 'image-resizer' && (
           <ImageResizerPage
+            initialFile={preloadedFile}
             onBack={handleNavBack}
           />
         )}
 
         {activePage === 'image-converter' && (
           <ImageConverterPage
+            initialFile={preloadedFile}
             onBack={handleNavBack}
           />
         )}
 
         {activePage === 'video-converter' && (
           <VideoConverterPage
+            initialFile={preloadedFile}
             onBack={handleNavBack}
           />
         )}
 
         {activePage === 'zip-creator' && (
           <ZipCreatorPage
+            initialFile={preloadedFile}
             onBack={handleNavBack}
           />
         )}
