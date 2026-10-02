@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Maximize2, Lock, Unlock, ArrowLeft, Download, RotateCcw, Check, Sparkles } from 'lucide-react';
 import DropZone from '../components/DropZone';
-import { api } from '../services/api';
+import { api, getApiAssetUrl, downloadFile } from '../services/api';
 import { formatBytes } from '../utils/formatters';
 
 export default function ImageResizerPage({ onBack, initialFile }) {
@@ -226,7 +226,7 @@ export default function ImageResizerPage({ onBack, initialFile }) {
               {/* Preview */}
               <div className="relative rounded-2xl overflow-hidden bg-slate-900 border border-slate-800 flex items-center justify-center p-4 max-h-96">
                 <img
-                  src={result.preview_url}
+                  src={getApiAssetUrl(result.preview_url)}
                   alt="Resized preview"
                   className="max-h-80 object-contain rounded-lg"
                 />
@@ -249,14 +249,14 @@ export default function ImageResizerPage({ onBack, initialFile }) {
                   >
                     Adjust Dimensions
                   </button>
-                  <a
-                    href={result.download_url}
-                    download={result.filename}
-                    className="flex-1 sm:flex-none px-6 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs flex items-center justify-center space-x-2 shadow-md shadow-brand-600/30"
+                  <button
+                    type="button"
+                    onClick={() => downloadFile(result.download_url, result.filename)}
+                    className="flex-1 sm:flex-none px-6 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs flex items-center justify-center space-x-2 shadow-md shadow-brand-600/30 cursor-pointer"
                   >
                     <Download className="w-4 h-4" />
                     <span>Download Resized Image</span>
-                  </a>
+                  </button>
                 </div>
               </div>
             </div>

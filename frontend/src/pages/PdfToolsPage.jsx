@@ -21,7 +21,7 @@ import {
 import DropZone from '../components/DropZone';
 import ProcessingProgress from '../components/ProcessingProgress';
 import { formatBytes } from '../utils/formatters';
-import { API_BASE } from '../services/api';
+import { API_BASE, getApiAssetUrl, downloadFile } from '../services/api';
 
 const PDF_TABS = [
   { id: 'img-to-pdf', label: 'Image to PDF', icon: FileUp, accept: 'image/*', multiple: true, desc: 'Convert JPG, PNG, WEBP images into a clean single PDF.' },
@@ -166,6 +166,12 @@ export default function PdfToolsPage({ initialTab = 'img-to-pdf', initialFile = 
       }
 
       const data = await res.json();
+      if (data.download_url) {
+        data.download_url = getApiAssetUrl(data.download_url);
+      }
+      if (data.preview_url) {
+        data.preview_url = getApiAssetUrl(data.preview_url);
+      }
       setResult(data);
     } catch (err) {
       clearInterval(progressInterval);
@@ -511,14 +517,14 @@ export default function PdfToolsPage({ initialTab = 'img-to-pdf', initialFile = 
 
             {/* Download Button */}
             <div className="flex flex-col sm:flex-row gap-3 pt-2">
-              <a
-                href={result.download_url}
-                download
-                className="flex-1 py-3 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-md shadow-emerald-600/25 flex items-center justify-center space-x-2 transition-all hover:-translate-y-0.5"
+              <button
+                type="button"
+                onClick={() => downloadFile(result.download_url, result.filename)}
+                className="flex-1 py-3 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-md shadow-emerald-600/25 flex items-center justify-center space-x-2 transition-all hover:-translate-y-0.5 cursor-pointer"
               >
                 <Download className="w-4 h-4" />
                 <span>Download Converted File</span>
-              </a>
+              </button>
 
               <button
                 onClick={handleReset}

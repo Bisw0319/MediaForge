@@ -3,7 +3,7 @@ import { Film, RefreshCw, ArrowLeft, Download, Check, Sparkles, Loader2 } from '
 import DropZone from '../components/DropZone';
 import VideoPreviewPlayer from '../components/VideoPreviewPlayer';
 import ProcessingProgress from '../components/ProcessingProgress';
-import { api } from '../services/api';
+import { api, getApiAssetUrl, downloadFile } from '../services/api';
 import { formatBytes } from '../utils/formatters';
 
 export default function VideoConverterPage({ onBack, initialFile }) {
@@ -183,14 +183,14 @@ export default function VideoConverterPage({ onBack, initialFile }) {
               {result.target_format === 'GIF' ? (
                 <div className="relative rounded-2xl overflow-hidden bg-slate-900 border border-slate-800 flex items-center justify-center p-4 max-h-96">
                   <img
-                    src={result.preview_url}
+                    src={getApiAssetUrl(result.preview_url)}
                     alt="GIF preview"
                     className="max-h-80 object-contain rounded-lg"
                   />
                 </div>
               ) : (
                 <VideoPreviewPlayer
-                  videoSrc={result.preview_url}
+                  videoSrc={getApiAssetUrl(result.preview_url)}
                   originalSize={result.original_size}
                   compressedSize={result.new_size}
                 />
@@ -213,14 +213,14 @@ export default function VideoConverterPage({ onBack, initialFile }) {
                   >
                     Convert Another Format
                   </button>
-                  <a
-                    href={result.download_url}
-                    download={result.filename}
-                    className="flex-1 sm:flex-none px-6 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs flex items-center justify-center space-x-2 shadow-md shadow-brand-600/30"
+                  <button
+                    type="button"
+                    onClick={() => downloadFile(result.download_url, result.filename)}
+                    className="flex-1 sm:flex-none px-6 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs flex items-center justify-center space-x-2 shadow-md shadow-brand-600/30 cursor-pointer"
                   >
                     <Download className="w-4 h-4" />
                     <span>Download {result.target_format}</span>
-                  </a>
+                  </button>
                 </div>
               </div>
             </div>

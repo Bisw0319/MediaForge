@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { CheckCircle2, Download, Eye, RotateCcw, Sparkles, AlertCircle, Share2 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { formatBytes } from '../utils/formatters';
+import { downloadFile } from '../services/api';
 
 export default function ResultCard({
   result,
@@ -23,13 +24,8 @@ export default function ResultCard({
   }, []);
 
   const handleDownload = () => {
-    if (result.download_url) {
-      const link = document.createElement('a');
-      link.href = result.download_url;
-      link.download = result.filename || 'compressed-file';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+    if (result && result.download_url) {
+      downloadFile(result.download_url, result.filename || 'compressed-file');
     }
   };
 

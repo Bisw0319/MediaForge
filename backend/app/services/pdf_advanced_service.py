@@ -4,7 +4,7 @@ import zipfile
 from pathlib import Path
 from typing import List, Optional, Dict, Any
 import pymupdf as fitz
-from PIL import Image
+from PIL import Image, ImageOps
 import docx
 from docx.shared import Inches, Pt, RGBColor
 import openpyxl
@@ -40,6 +40,7 @@ class PDFAdvancedService:
 
         for img_path in image_paths:
             with Image.open(img_path) as pil_img:
+                pil_img = ImageOps.exif_transpose(pil_img)
                 # Convert palette or transparency to RGB
                 if pil_img.mode in ("RGBA", "LA", "P"):
                     bg = Image.new("RGB", pil_img.size, (255, 255, 255))
@@ -53,20 +54,14 @@ class PDFAdvancedService:
                 elif pil_img.mode != "RGB":
                     pil_img = pil_img.convert("RGB")
 
+                img_w, img_h = pil_img.size
                 img_byte_arr = io.BytesIO()
-                pil_img.save(img_byte_arr, format="JPEG", quality=92, optimize=True)
+                pil_img.save(img_byte_arr, format="JPEG", quality=95, optimize=True)
                 img_bytes = img_byte_arr.getvalue()
 
-            # Create PDF page matching image dimensions
-            img_doc = fitz.open(stream=img_bytes, filetype="jpeg")
-            rect = img_doc[0].rect
-            pdf_bytes = img_doc.convert_to_pdf()
-            img_pdf = fitz.open("pdf", pdf_bytes)
-            
-            page = doc.new_page(width=rect.width, height=rect.height)
-            page.show_pdf_page(rect, img_pdf, 0)
-            img_doc.close()
-            img_pdf.close()
+            # Create PDF page matching exact image dimensions and embed image natively
+            page = doc.new_page(width=img_w, height=img_h)
+            page.insert_image(fitz.Rect(0, 0, img_w, img_h), stream=img_bytes)
 
         doc.save(str(out_path), garbage=3, deflate=True)
         doc.close()

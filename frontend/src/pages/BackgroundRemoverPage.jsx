@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import DropZone from '../components/DropZone';
 import BeforeAfterSlider from '../components/BeforeAfterSlider';
-import { api } from '../services/api';
+import { api, getApiAssetUrl, downloadFile } from '../services/api';
 import { formatBytes } from '../utils/formatters';
 
 export default function BackgroundRemoverPage({ onBack, initialFile }) {
@@ -117,12 +117,7 @@ export default function BackgroundRemoverPage({ onBack, initialFile }) {
 
   const handleDownload = () => {
     if (result && result.download_url) {
-      const a = document.createElement('a');
-      a.href = result.download_url;
-      a.download = result.filename || 'mediaforge_cutout.png';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
+      downloadFile(result.download_url, result.filename || 'mediaforge_cutout.png');
     }
   };
 
@@ -326,7 +321,7 @@ export default function BackgroundRemoverPage({ onBack, initialFile }) {
 
             <BeforeAfterSlider
               beforeSrc={originalUrl}
-              afterSrc={result.preview_url}
+              afterSrc={getApiAssetUrl(result.preview_url)}
               beforeLabel="Original Image"
               afterLabel="Background Removed"
               isTransparent={bgType === 'transparent'}

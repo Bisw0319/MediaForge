@@ -5,6 +5,63 @@
 const rawApiBase = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || '/api';
 export const API_BASE = rawApiBase.replace(/\/+$/, '');
 
+export function getApiAssetUrl(url) {
+  if (!url || typeof url !== 'string') return url;
+  if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('blob:') || url.startsWith('data:')) {
+    return url;
+  }
+  if (API_BASE.startsWith('http://') || API_BASE.startsWith('https://')) {
+    const origin = API_BASE.replace(/\/api\/?$/, '');
+    const cleanPath = url.startsWith('/') ? url : `/${url}`;
+    return `${origin}${cleanPath}`;
+  }
+  return url.startsWith('/') ? url : `/${url}`;
+}
+
+export function deepNormalizeUrls(obj) {
+  if (!obj || typeof obj !== 'object') return obj;
+  if (Array.isArray(obj)) {
+    return obj.map(deepNormalizeUrls);
+  }
+  const result = { ...obj };
+  for (const [key, val] of Object.entries(result)) {
+    if (typeof val === 'string' && (key.includes('url') || key.includes('download') || key.includes('preview') || key.includes('path'))) {
+      result[key] = getApiAssetUrl(val);
+    } else if (typeof val === 'object' && val !== null) {
+      result[key] = deepNormalizeUrls(val);
+    }
+  }
+  return result;
+}
+
+export async function downloadFile(url, filename = 'downloaded_file') {
+  const fullUrl = getApiAssetUrl(url);
+  try {
+    const res = await fetch(fullUrl);
+    if (!res.ok) {
+      throw new Error(`Server returned error ${res.status}`);
+    }
+    const blob = await res.blob();
+    const blobUrl = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = blobUrl;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => window.URL.revokeObjectURL(blobUrl), 10000);
+  } catch (err) {
+    console.warn('Direct blob download failed, falling back to direct navigation:', err);
+    const a = document.createElement('a');
+    a.href = fullUrl;
+    a.download = filename;
+    a.target = '_blank';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+}
+
 async function handleResponse(response) {
   if (!response.ok) {
     let errorMsg = 'An unexpected error occurred while processing your file.';
@@ -24,7 +81,8 @@ async function handleResponse(response) {
     }
     throw new Error(errorMsg);
   }
-  return await response.json();
+  const data = await response.json();
+  return deepNormalizeUrls(data);
 }
 
 export const api = {

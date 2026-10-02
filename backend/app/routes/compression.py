@@ -1,6 +1,7 @@
 import os
 import shutil
 import zipfile
+import mimetypes
 from pathlib import Path
 from typing import List, Optional
 from fastapi import APIRouter, HTTPException, BackgroundTasks, Query, UploadFile, File, Form
@@ -198,14 +199,17 @@ async def download_file(filename: str, background_tasks: BackgroundTasks, cleanu
     if cleanup:
         background_tasks.add_task(delete_specific_file, str(file_path))
 
+    media_type, _ = mimetypes.guess_type(clean_name)
+    if not media_type:
+        media_type = "application/octet-stream"
+
     return FileResponse(
         path=str(file_path),
         filename=clean_name,
-        media_type="application/octet-stream",
+        media_type=media_type,
         headers={
             "X-Content-Type-Options": "nosniff",
-            "Content-Security-Policy": "default-src 'none'",
-            "X-Frame-Options": "DENY"
+            "Access-Control-Expose-Headers": "Content-Disposition, Content-Length",
         }
     )
 
@@ -235,17 +239,19 @@ async def preview_file(filename: str):
         ".webm": "video/webm",
         ".mp3": "audio/mpeg",
         ".wav": "audio/wav",
-        ".pdf": "application/pdf"
+        ".pdf": "application/pdf",
+        ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
     }
-    media_type = media_types.get(ext, "application/octet-stream")
+    guessed_type, _ = mimetypes.guess_type(clean_name)
+    media_type = media_types.get(ext, guessed_type or "application/octet-stream")
 
     return FileResponse(
         path=str(file_path),
         media_type=media_type,
         headers={
             "X-Content-Type-Options": "nosniff",
-            "Content-Security-Policy": "default-src 'none'",
-            "X-Frame-Options": "DENY"
+            "Access-Control-Allow-Origin": "*",
         }
     )
 
