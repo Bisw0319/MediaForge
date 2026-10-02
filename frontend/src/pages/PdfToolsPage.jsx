@@ -21,6 +21,7 @@ import {
 import DropZone from '../components/DropZone';
 import ProcessingProgress from '../components/ProcessingProgress';
 import { formatBytes } from '../utils/formatters';
+import { API_BASE } from '../services/api';
 
 const PDF_TABS = [
   { id: 'img-to-pdf', label: 'Image to PDF', icon: FileUp, accept: 'image/*', multiple: true, desc: 'Convert JPG, PNG, WEBP images into a clean single PDF.' },
@@ -106,37 +107,37 @@ export default function PdfToolsPage({ initialTab = 'img-to-pdf', initialFile = 
       let endpoint = '';
 
       if (activeTab === 'img-to-pdf') {
-        endpoint = '/api/pdf-tools/img-to-pdf';
+        endpoint = `${API_BASE}/pdf-tools/img-to-pdf`;
         files.forEach((f) => formData.append('files', f));
       } else if (activeTab === 'pdf-to-word') {
-        endpoint = '/api/pdf-tools/pdf-to-word';
+        endpoint = `${API_BASE}/pdf-tools/pdf-to-word`;
         formData.append('file', files[0]);
       } else if (activeTab === 'word-to-pdf') {
-        endpoint = '/api/pdf-tools/word-to-pdf';
+        endpoint = `${API_BASE}/pdf-tools/word-to-pdf`;
         formData.append('file', files[0]);
       } else if (activeTab === 'pdf-to-jpg') {
-        endpoint = '/api/pdf-tools/pdf-to-jpg';
+        endpoint = `${API_BASE}/pdf-tools/pdf-to-jpg`;
         formData.append('file', files[0]);
         formData.append('dpi', dpi);
       } else if (activeTab === 'merge-pdf') {
-        endpoint = '/api/pdf-tools/merge';
+        endpoint = `${API_BASE}/pdf-tools/merge`;
         files.forEach((f) => formData.append('files', f));
       } else if (activeTab === 'split-pdf') {
-        endpoint = '/api/pdf-tools/split';
+        endpoint = `${API_BASE}/pdf-tools/split`;
         formData.append('file', files[0]);
         formData.append('split_mode', splitMode);
         if (splitMode === 'range') {
           formData.append('page_range', pageRange || '1');
         }
       } else if (activeTab === 'pdf-to-excel') {
-        endpoint = '/api/pdf-tools/pdf-to-excel';
+        endpoint = `${API_BASE}/pdf-tools/pdf-to-excel`;
         formData.append('file', files[0]);
       } else if (activeTab === 'protect-pdf') {
-        endpoint = '/api/pdf-tools/protect';
+        endpoint = `${API_BASE}/pdf-tools/protect`;
         formData.append('file', files[0]);
         formData.append('password', password);
       } else if (activeTab === 'rotate-pdf') {
-        endpoint = '/api/pdf-tools/rotate';
+        endpoint = `${API_BASE}/pdf-tools/rotate`;
         formData.append('file', files[0]);
         formData.append('angle', rotationAngle);
       }

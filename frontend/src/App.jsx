@@ -19,6 +19,7 @@ import PdfToolsPage from './pages/PdfToolsPage';
 import AboutPage from './pages/AboutPage';
 import PrivacyPage from './pages/PrivacyPage';
 import TermsPage from './pages/TermsPage';
+import { API_BASE } from './services/api';
 
 export default function App() {
   const [activePage, setActivePage] = useState('home');
@@ -32,7 +33,7 @@ export default function App() {
     let isMounted = true;
     const verifyBackendHealth = async () => {
       try {
-        const res = await fetch('/api/health');
+        const res = await fetch(`${API_BASE}/health`);
         if (isMounted) {
           setBackendOffline(!res.ok);
         }
