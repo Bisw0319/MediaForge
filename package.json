@@ -9,6 +9,6 @@
     "dev:backend": "cd backend && venv\\Scripts\\activate && uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload",
     "build": "npm run build --prefix frontend",
     "preview": "npm run preview --prefix frontend",
-    "deploy:firebase": "npm run build && npx -y firebase-tools deploy --only hosting"
+    "deploy:netlify": "npm run build && npx -y netlify-cli deploy --dir=frontend/dist --prod"
   }
 }

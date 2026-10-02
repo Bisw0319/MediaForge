@@ -2,8 +2,8 @@
  * MediaForge API Service Client
  */
 
-export const API_BASE = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '') + '/api';
-
+const rawApiBase = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || '/api';
+export const API_BASE = rawApiBase.replace(/\/+$/, '');
 
 async function handleResponse(response) {
   if (!response.ok) {
