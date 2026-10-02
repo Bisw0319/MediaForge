@@ -1,0 +1,44 @@
+# Python Virtual Environments
+venv/
+.venv/
+env/
+**/venv/
+backend/venv/
+
+# Python Cache & Bytecode
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*$py.class
+
+# Temporary MediaForge Working Files
+temp/
+**/temp/
+backend/temp/
+*.log
+
+# Environment and Secrets
+.env
+*.env
+backend/.env
+!.env.example
+!*.env.example
+
+# Service Account Keys & Credentials
+*service_account*.json
+*serviceAccountKey*.json
+firebase_service_account.json
+backend/firebase_service_account.json
+!*.example.json
+
+# Node Dependencies and Builds
+node_modules/
+**/node_modules/
+dist/
+**/dist/
+
+# OS and IDE files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

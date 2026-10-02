@@ -1,0 +1,13 @@
+{
+  "name": "mediaforge",
+  "version": "1.0.0",
+  "description": "MediaForge: All-in-one file compression and media optimization platform",
+  "type": "module",
+  "scripts": {
+    "dev": "node scripts/dev.js",
+    "dev:frontend": "npm run dev --prefix frontend",
+    "dev:backend": "cd backend && venv\\Scripts\\activate && uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload",
+    "build": "npm run build --prefix frontend",
+    "preview": "npm run preview --prefix frontend"
+  }
+}
