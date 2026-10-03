@@ -31,20 +31,32 @@ export default function App() {
   // Monitor backend API connectivity
   useEffect(() => {
     let isMounted = true;
+    let failCount = 0;
     const verifyBackendHealth = async () => {
       try {
         const res = await fetch(`${API_BASE}/health`);
         if (isMounted) {
-          setBackendOffline(!res.ok);
+          if (res.ok) {
+            failCount = 0;
+            setBackendOffline(false);
+          } else {
+            failCount += 1;
+            if (failCount >= 2) {
+              setBackendOffline(true);
+            }
+          }
         }
       } catch {
         if (isMounted) {
-          setBackendOffline(true);
+          failCount += 1;
+          if (failCount >= 2) {
+            setBackendOffline(true);
+          }
         }
       }
     };
     verifyBackendHealth();
-    const timer = setInterval(verifyBackendHealth, 6000);
+    const timer = setInterval(verifyBackendHealth, 8000);
     return () => {
       isMounted = false;
       clearInterval(timer);
@@ -105,11 +117,12 @@ export default function App() {
     <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-200">
       
       {/* Backend Offline Warning Banner (Shown only if port 8000 is down) */}
+      {/* Backend Connecting / Offline Notice */}
       {backendOffline && (
         <div className="bg-amber-600 text-white text-xs px-4 py-2.5 text-center font-medium shadow-md flex items-center justify-center space-x-2 animate-fadeIn z-50 sticky top-0">
           <AlertCircle className="w-4 h-4 flex-shrink-0 text-amber-200" />
           <span>
-            <strong>Backend Server Offline (Status 502):</strong> Python FastAPI on port 8000 is not running. Start it with <code className="bg-black/25 px-1.5 py-0.5 rounded font-mono font-bold">run.bat</code> or <code className="bg-black/25 px-1.5 py-0.5 rounded font-mono font-bold">npm run dev</code>.
+            <strong>Cloud Processing Engine Connecting:</strong> MediaForge is establishing connection to the cloud backend. Retrying automatically...
           </span>
         </div>
       )}
