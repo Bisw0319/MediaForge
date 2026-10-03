@@ -7,7 +7,7 @@
 
 [build.environment]
   NODE_VERSION = "20"
-  VITE_API_URL = "https://mediaforge.fastapicloud.dev/api"
+  VITE_API_URL = "/api"
 
 [[redirects]]
   from = "/api/*"
