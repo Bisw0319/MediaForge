@@ -1,4 +1,5 @@
 import os
+import asyncio
 from typing import Optional, List
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException
 from ..services.image_service import ImageService
@@ -12,7 +13,7 @@ async def inspect_image(file: UploadFile = File(...)):
     """Inspects uploaded image to return dimensions, format, and size"""
     upload_path, orig_name = await validate_and_save_upload(file, expected_category="image", prefix="inspect")
     try:
-        info = ImageService.inspect_image(str(upload_path))
+        info = await asyncio.to_thread(ImageService.inspect_image, str(upload_path))
         info["original_filename"] = orig_name
         return info
     except Exception as e:
@@ -35,7 +36,8 @@ async def compress_image(
     upload_path, orig_name = await validate_and_save_upload(file, expected_category="image", prefix="upload")
 
     try:
-        result = ImageService.compress_image(
+        result = await asyncio.to_thread(
+            ImageService.compress_image,
             input_path=str(upload_path),
             original_filename=orig_name,
             mode=mode,

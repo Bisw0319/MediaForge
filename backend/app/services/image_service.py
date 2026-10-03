@@ -102,73 +102,63 @@ class ImageService:
         out_filename = generate_unique_filename(original_filename, prefix="compressed", new_ext=ext)
         out_path = PROCESSED_DIR / out_filename
 
-        best_buffer = None
-        best_size = original_size
         final_quality = 80
         scale = 1.0
 
         if mode == "quality" and quality is not None:
-            # Directly use chosen quality
-            q = max(10, min(100, int(quality)))
-            buf = io.BytesIO()
-            save_kwargs = {"quality": q, "optimize": True}
+            # Direct quality mode: one-pass
+            final_quality = max(10, min(100, int(quality)))
+            save_kwargs = {"quality": final_quality, "optimize": True}
             if fmt == "PNG":
-                # PNG uses compress_level (1-9)
-                save_kwargs = {"compress_level": max(1, min(9, int((100 - q) / 10)))}
-            work_img.save(buf, format="JPEG" if fmt in ["JPEG", "JPG"] else fmt, **save_kwargs)
-            best_buffer = buf.getvalue()
-            best_size = len(best_buffer)
-            final_quality = q
+                save_kwargs = {"compress_level": max(1, min(9, int((100 - final_quality) / 10)))}
+            work_img.save(out_path, format="JPEG" if fmt in ["JPEG", "JPG"] else fmt, **save_kwargs)
+
+        elif mode == "percentage" and percentage is not None:
+            # Percentage reduction mode: deterministic 1-pass calculation
+            pct = max(5.0, min(95.0, float(percentage)))
+            final_quality = max(20, min(90, int(90 - (pct * 0.7))))
+            if pct >= 70:
+                scale = 0.75
+            elif pct >= 50:
+                scale = 0.85
+
+            if scale < 1.0:
+                scaled_w = max(50, int(orig_w * scale))
+                scaled_h = max(50, int(orig_h * scale))
+                work_img = work_img.resize((scaled_w, scaled_h), Image.Resampling.LANCZOS)
+
+            save_kwargs = {"quality": final_quality, "optimize": True}
+            if fmt == "PNG":
+                save_kwargs = {"compress_level": 7, "optimize": True}
+            work_img.save(out_path, format="JPEG" if fmt in ["JPEG", "JPG"] else fmt, **save_kwargs)
+
         else:
-            # Target size or percentage mode: binary search quality & resolution scaling
+            # Target size mode: estimate scale & quality in 1 pass
             target = target_bytes or int(original_size * 0.5)
-            # Avoid impossible target
-            min_practical_bytes = 10 * 1024  # 10 KB
-            target = max(min_practical_bytes, target)
+            ratio = target / max(1, original_size)
 
-            # Strategy 1: Search quality levels [15..95] at scale 1.0
-            low_q, high_q = 15, 95
-            closest_diff = float("inf")
-            best_img_to_save = work_img
+            if ratio < 0.25:
+                scale = 0.55
+                final_quality = 35
+            elif ratio < 0.5:
+                scale = 0.75
+                final_quality = 55
+            elif ratio < 0.75:
+                scale = 0.90
+                final_quality = 70
+            else:
+                scale = 1.0
+                final_quality = 82
 
-            for current_scale in [1.0, 0.85, 0.70, 0.50, 0.35]:
-                scaled_w = max(50, int(orig_w * current_scale))
-                scaled_h = max(50, int(orig_h * current_scale))
-                if current_scale < 1.0:
-                    cand_img = work_img.resize((scaled_w, scaled_h), Image.Resampling.LANCZOS)
-                else:
-                    cand_img = work_img
+            if scale < 1.0:
+                scaled_w = max(50, int(orig_w * scale))
+                scaled_h = max(50, int(orig_h * scale))
+                work_img = work_img.resize((scaled_w, scaled_h), Image.Resampling.LANCZOS)
 
-                # Binary search quality on this scale
-                q_candidates = [30, 50, 70, 85, 92]
-                for q_try in q_candidates:
-                    buf = io.BytesIO()
-                    save_kwargs = {"quality": q_try, "optimize": True}
-                    if fmt == "PNG":
-                        save_kwargs = {"compress_level": 9, "optimize": True}
-                    cand_img.save(buf, format="JPEG" if fmt in ["JPEG", "JPG"] else fmt, **save_kwargs)
-                    sz = buf.tell()
-
-                    diff = abs(sz - target)
-                    # We prefer being <= target or close within 10%
-                    if sz <= target or diff < closest_diff:
-                        closest_diff = diff
-                        best_buffer = buf.getvalue()
-                        best_size = sz
-                        best_img_to_save = cand_img
-                        final_quality = q_try
-                        scale = current_scale
-
-                    if sz <= target:
-                        # Achieved target with this scale!
-                        break
-
-                if best_size <= target * 1.05:
-                    break
-
-        # Write final bytes
-        with open(out_path, "wb") as f:
-            f.write(best_buffer if best_buffer else b"")
+            save_kwargs = {"quality": final_quality, "optimize": True}
+            if fmt == "PNG":
+                save_kwargs = {"compress_level": 7, "optimize": True}
+            work_img.save(out_path, format="JPEG" if fmt in ["JPEG", "JPG"] else fmt, **save_kwargs)
 
         actual_size = os.path.getsize(out_path)
         saved_bytes = max(0, original_size - actual_size)
