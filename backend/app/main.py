@@ -45,11 +45,20 @@ async def periodic_cleanup_task():
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup: Run cleanup on start and start background cleanup worker
+    # Startup: Non-blocking startup to ensure immediate port binding and instant readiness
     logger.info("MediaForge backend starting up...")
-    cleanup_old_files(max_age_seconds=1800)
-    FirebaseService.is_active()
+
+    async def async_startup_cleanup():
+        try:
+            cleanup_old_files(max_age_seconds=1800)
+        except Exception as e:
+            logger.warning(f"Initial cleanup notice: {e}")
+
+    # Launch background cleanup tasks without blocking the ASGI lifespan yield
+    asyncio.create_task(async_startup_cleanup())
     cleanup_task = asyncio.create_task(periodic_cleanup_task())
+
+    logger.info("MediaForge startup complete. Ready to accept connections.")
     yield
     # Shutdown: Cancel cleanup worker
     cleanup_task.cancel()

@@ -5,15 +5,31 @@ import zipfile
 from pathlib import Path
 from typing import Optional, List, Tuple
 
+import tempfile
+
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
-TEMP_DIR = BASE_DIR / "temp"
+
+# Ensure temporary working directory is safely writable in all cloud environments
+try:
+    TEMP_DIR = BASE_DIR / "temp"
+    TEMP_DIR.mkdir(parents=True, exist_ok=True)
+    test_probe = TEMP_DIR / ".write_probe"
+    test_probe.touch()
+    test_probe.unlink(missing_ok=True)
+except Exception:
+    TEMP_DIR = Path(tempfile.gettempdir()) / "mediaforge_temp"
+    TEMP_DIR.mkdir(parents=True, exist_ok=True)
+
 UPLOADS_DIR = TEMP_DIR / "uploads"
 PROCESSED_DIR = TEMP_DIR / "processed"
 ARCHIVES_DIR = TEMP_DIR / "archives"
 
-# Ensure all temporary directories exist
+# Ensure all temporary subdirectories exist
 for folder in [TEMP_DIR, UPLOADS_DIR, PROCESSED_DIR, ARCHIVES_DIR]:
-    folder.mkdir(parents=True, exist_ok=True)
+    try:
+        folder.mkdir(parents=True, exist_ok=True)
+    except Exception:
+        pass
 
 
 def sanitize_filename(filename: str) -> str:
