@@ -2,7 +2,6 @@ import os
 from pathlib import Path
 from typing import Optional, Dict, Any, Tuple
 from PIL import Image, ImageDraw, ImageOps
-import rembg
 
 from ..utils.file_utils import (
     PROCESSED_DIR,
@@ -16,29 +15,26 @@ _REMBG_SESSIONS: Dict[str, Any] = {}
 def get_rembg_session(model_type: str = "human"):
     """
     Retrieves or initializes a cached rembg ONNX session.
-    - 'human' / 'portrait': uses 'u2net_human_seg' (176MB) specialized for people,
-      preserving arms, shoulders, hair, and body silhouettes without cutting edges.
-    - 'general' / 'object': uses 'u2net' (176MB) full salient object model for products,
-      animals, cars, logos, and general items.
+    Loads rembg lazily so app startup is instant and stays well under memory limits.
     """
     global _REMBG_SESSIONS
 
-    model_key = (model_type or "human").lower().strip()
-    onnx_model_name = "u2net_human_seg" if model_key in ["human", "portrait", "person", "body"] else "u2net"
+    try:
+        import rembg
+    except ImportError:
+        return None
+
+    # Use ultra-lightweight u2netp (4.7MB) by default to stay strictly under cloud memory limits
+    onnx_model_name = "u2netp"
 
     if onnx_model_name not in _REMBG_SESSIONS or _REMBG_SESSIONS[onnx_model_name] is None:
         try:
             _REMBG_SESSIONS[onnx_model_name] = rembg.new_session(onnx_model_name)
         except Exception:
-            # Fallback chain to ensure operation never breaks
             try:
-                fallback_name = "u2net" if onnx_model_name != "u2net" else "u2net_human_seg"
-                _REMBG_SESSIONS[onnx_model_name] = rembg.new_session(fallback_name)
+                _REMBG_SESSIONS[onnx_model_name] = rembg.new_session()
             except Exception:
-                try:
-                    _REMBG_SESSIONS[onnx_model_name] = rembg.new_session()
-                except Exception:
-                    _REMBG_SESSIONS[onnx_model_name] = None
+                _REMBG_SESSIONS[onnx_model_name] = None
 
     return _REMBG_SESSIONS.get(onnx_model_name)
 
@@ -94,6 +90,7 @@ class BackgroundService:
         # 3. Perform AI cutout with putalpha=True:
         # - putalpha=True applies the neural alpha mask directly onto the original pristine RGB pixels
         # - post_process_mask=False preserves natural, anti-aliased soft contours without harsh binarization
+        import rembg
         if session:
             cutout = rembg.remove(
                 input_image,

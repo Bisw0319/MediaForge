@@ -4,8 +4,6 @@ import math
 from pathlib import Path
 from typing import Optional, Dict, Any, Tuple
 from PIL import Image, ImageOps
-import cv2
-import numpy as np
 
 from ..utils.file_utils import (
     PROCESSED_DIR,
